@@ -389,6 +389,7 @@ body{
 
 </div>
 
+<script src="wallpapers.js"></script>
 <script>
 
 // ===========================
@@ -417,13 +418,8 @@ updateClock();
 // ==========================================
 // BACKGROUND AUTOMATED BATCH ENGINE LOOP
 // ==========================================
-const backgrounds = [];
-const totalImages = 50; // Just alter this single limit integer as you grow your folder!
-
-for (let i = 1; i <= totalImages; i++) {
-    // Web-relative path so this works locally and on GitHub Pages
-    backgrounds.push(`wallpapers/${i}.webp`);
-}
+// Generated from however many supported images are currently in the WALLZ folder.
+const backgrounds = window.MICHAEL_WALLPAPERS || [];
 
 let savedIndex = localStorage.getItem("michael_bg_index");
 let current = savedIndex ? parseInt(savedIndex) : 0;
