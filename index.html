@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michael's Start Page</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    height:100vh;
+    overflow:hidden;
+    background:#000000; /* Solves bright flashes on load */
+}
+
+/* HIGH-PERFORMANCE WALLPAPER OVERLAY LAYER */
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out; /* Uses GPU processing to end the new tab lag */
+}
+
+.bg-overlay.fade-in {
+    opacity: 1;
+}
+
+.overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    backdrop-filter: blur(0px);
+    z-index: 2;
+}
+
+.content{
+    position:relative;
+    z-index:3;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    height:100vh;
+    padding:20px;
+}
+
+.clock{
+    font-size:70px;
+    font-weight:bold;
+    text-shadow: 0 0 15px currentColor;
+}
+
+.date{
+    margin-top:10px;
+    font-size:22px;
+    opacity:0.9;
+}
+
+.search-box{
+    margin-top:35px;
+    width:100%;
+    max-width:700px;
+}
+
+.search-box form{
+    display:flex;
+}
+
+.search-box input{
+    flex:1;
+    padding:18px 22px;
+    border:none;
+    border-radius:15px 0 0 15px;
+    background:#000000;
+    color:#ae00ff;
+    font-size:18px;
+    outline:none;
+}
+
+.search-box button{
+    padding:18px 28px;
+    border:none;
+    background:#1b1b1b;
+    font-size:18px;
+    cursor:pointer;
+    border-radius:0 15px 15px 0;
+    transition: 0.2s;
+}
+
+.search-box button:hover{
+    opacity:0.9;
+}
+
+.links{
+    margin-top:45px;
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap:25px;
+    width:100%;
+    max-width:900px;
+}
+
+.link-card{
+    text-decoration:none;
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:6px;
+    padding:6px;
+
+    /* Clean flexible horizontal and vertical grid elements centering */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    transition:0.25s;
+    backdrop-filter: blur(10px);
+}
+
+.link-card:hover{
+    transform:translateY(-5px) scale(1.03);
+    background:rgba(255,255,255,0.18);
+    box-shadow: 0 0 15px currentColor;
+}
+
+.link-card img{
+    width:96px;
+    height:96px;
+    object-fit:contain;
+    margin-bottom:4px;
+}
+
+.link-card span{
+    display:block;
+    font-size:15px;
+    word-break:break-word;
+}
+
+/* TOP TOOLBAR CONTAINER */
+.top-toolbar {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.picker-container input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    background: none;
+}
+.picker-container input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+.picker-container input[type="color"]::-webkit-color-swatch {
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+}
+
+.bento-btn {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+.bento-btn:hover { 
+    background-color: rgba(255, 255, 255, 0.15); 
+}
+.bento-dot { 
+    width: 4px; 
+    height: 4px; 
+    border-radius: 50%; 
+}
+
+.bento-dropdown {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 260px;
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid #00ff1e;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    padding: 15px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+.bento-dropdown.show-menu { 
+    display: grid; 
+}
+.dropdown-app-link { 
+    text-decoration: none; 
+    color: #ffffff; 
+    font-size: 11px; 
+}
+.dropdown-app-link img { 
+    width: 36px; 
+    height: 36px; 
+    display: block; 
+    margin: 0 auto 6px; 
+}
+
+.nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    object-fit: contain;
+    border: 1px solid rgba(255,255,255,0.4);
+    background: rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s;
+}
+.nav-avatar:hover { 
+    transform: scale(1.1);
+}
+
+/* NOTEPAD CONTAINER STYLING */
+.notepad-container {
+    margin-top: 30px;
+    width: 100%;
+    max-width: 900px;
+    position: relative;
+    z-index: 5;
+}
+.notepad-container textarea {
+    width: 100%;
+    height: 160px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    padding: 12px;
+    color: #ffffff;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    backdrop-filter: blur(5px);
+    transition: border-color 0.2s;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HARDWARE GRAPHICS ELEMENT FOR SMOOTH LOADING -->
+<div class="bg-overlay" id="bgOverlay"></div>
+<div class="overlay"></div>
+
+<div class="top-toolbar">
+    <div class="picker-container" title="Click to open Color Picker">
+        <input type="color" id="inlineColorPicker" value="#00ff1e">
+    </div>
+
+    <div class="bento-btn" id="bentoButton" title="Google & Microsoft Apps">
+        <div class="bento-dot"></div><div class="bento-dot"></div><div class="bento-dot"></div>
+        <div class="bento-dot"></div><div class="bento-dot"></div><div class="bento-dot"></div>
+        <div class="bento-dot"></div><div class="bento-dot"></div><div class="bento-dot"></div>
+    </div>
+
+    <div id="launcherMenu" class="bento-dropdown">
+        <a href="https://google.com" target="_blank" class="dropdown-app-link">
+            <img src="icons/15.png" alt="Drive">Drive
+        </a>
+        <a href="https://live.com" target="_blank" class="dropdown-app-link">
+            <img src="icons/16.png" alt="Outlook">Outlook
+        </a>
+        <a href="https://office.com" target="_blank" class="dropdown-app-link">
+            <img src="icons/17.png" alt="Office">Office
+        </a>
+    </div>
+
+    <a href="https://google.com" target="_blank">
+        <img class="nav-avatar" id="gAvatar" src="icons/13.png" alt="Google Account" title="My Google Profile">
+    </a>
+
+    <a href="https://microsoft.com" target="_blank">
+        <img class="nav-avatar" id="mAvatar" src="icons/14.png" alt="Microsoft Account" title="My Microsoft Profile">
+    </a>
+</div>
+
+<div class="content">
+
+    <div class="clock" id="clock">00:00</div>
+    <div class="date" id="date">Loading Date...</div>
+
+    <div class="search-box">
+        <form action="https://google.com" method="GET">
+            <input type="text" name="q" placeholder="FUCK OFF!! I'm busy banging your mum...">
+            <button type="submit">FUCKFACE</button>
+        </form>
+    </div>
+
+    <div class="links">
+
+        <a class="link-card" href="https://bet365.com.au">
+            <img src="icons/1.png">
+            <span>BET365</span>
+        </a>
+
+        <a class="link-card" href="https://neds.com.au">
+            <img src="icons/2.png">
+            <span>NEDS</span>
+        </a>
+		
+        <a class="link-card" href="https://ladbrokes.com.au">
+            <img src="icons/3.png">
+            <span>LADBROKES</span>
+        </a>
+
+        <a class="link-card" href="https://unibet.com.au">
+            <img src="icons/4.png">
+            <span>UNIBET</span>
+        </a>
+
+        <a class="link-card" href="https://sportsbet.com.au">
+            <img src="icons/5.png">
+            <span>SPORTSBET</span>
+        </a>
+
+        <a class="link-card" href="https://tab.com.au">
+            <img src="icons/6.png">
+            <span>TAB</span>
+        </a>
+
+        <a class="link-card" href="https://google.com">
+            <img src="icons/7.png">
+            <span>GOOGLE AI</span>
+        </a>
+
+        <a class="link-card" href="https://hellhades.com/raid/tier-list/">
+            <img src="icons/8.png">
+            <span>HELLHADES</span>
+        </a>
+
+        <a class="link-card" href="https://hellhades.com/raid/damage-efficiency/">
+            <img src="icons/9.png">
+            <span>RAID DAMAGE</span>
+        </a>
+
+        <a class="link-card" href="https://www.afl.com.au/">
+            <img src="icons/10.png">
+            <span>AFL</span>
+        </a>
+
+        <a class="link-card" href="https://livetv.sx">
+            <img src="icons/11.png">
+            <span>LIVETV.SX</span>
+        </a>
+
+        <a class="link-card" href="http://winstall.app">
+            <img src="icons/12.png">
+            <span>WINSTALL</span>
+        </a>
+		
+    </div>
+
+    <!-- PERSISTENT NOTEPAD ENGINE -->
+    <div class="notepad-container">
+        <textarea id="scratchPad" placeholder="Write whatever you want. Just DON'T FUCKEN SWEAR!!! "></textarea>
+    </div>
+
+</div>
+
+<script>
+
+// ===========================
+// CLOCK ENGINE
+// ===========================
+function updateClock(){
+    const now = new Date();
+    const time = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute:'2-digit',
+        hour12: false // Set true if you want 12-hour engine instead of 24h
+    });
+    const date = now.toLocaleDateString('en-AU', {
+        weekday:'long',
+        year:'numeric',
+        month:'long',
+        day:'numeric'
+    });
+    document.getElementById('clock').textContent = time;
+    document.getElementById('date').textContent = date;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+
+// ==========================================
+// BACKGROUND AUTOMATED BATCH ENGINE LOOP
+// ==========================================
+const backgrounds = [];
+const totalImages = 50; // Just alter this single limit integer as you grow your folder!
+
+for (let i = 1; i <= totalImages; i++) {
+    // Web-relative path so this works locally and on GitHub Pages
+    backgrounds.push(`wallpapers/${i}.webp`);
+}
+
+let savedIndex = localStorage.getItem("michael_bg_index");
+let current = savedIndex ? parseInt(savedIndex) : 0;
+
+// Ensure indices are verified if total image size shrinks or shifts
+if (current >= backgrounds.length) {
+    current = 0;
+}
+
+function changeBackground(){
+    const bgOverlay = document.getElementById('bgOverlay');
+    
+    if (backgrounds.length > 0) {
+        // Remove class to reset transparency hook pipeline prior to asset switch
+        bgOverlay.classList.remove('fade-in');
+        
+        bgOverlay.style.backgroundImage = `url('${backgrounds[current]}')`;
+        
+        // This tiny delay lets the browser read the heavy local PNG before fading it in smoothly
+        setTimeout(() => {
+            bgOverlay.classList.add('fade-in');
+        }, 50);
+        
+        current++;
+        if(current >= backgrounds.length){
+            current = 0;
+        }
+        localStorage.setItem("michael_bg_index", current);
+    }
+}
+
+const slideshowTime = 1800000; // Rotates exactly every 30 minutes (1800000 ms)
+changeBackground();
+setInterval(changeBackground, slideshowTime);
+
+
+// ==========================================
+// BENTO DROPDOWN APP LAUNCHER CONTROLLER
+// ==========================================
+const bentoButton = document.getElementById("bentoButton");
+const launcherMenu = document.getElementById("launcherMenu");
+
+bentoButton.addEventListener("click", function(event) {
+    launcherMenu.classList.toggle("show-menu");
+    event.stopPropagation();
+});
+
+window.addEventListener("click", function(event) {
+    if (!launcherMenu.contains(event.target) && event.target !== bentoButton) {
+        launcherMenu.classList.remove("show-menu");
+    }
+});
+
+
+// ==========================================================
+// INTERACTIVE THEME MANAGEMENT ENGINES
+// ==========================================================
+const themePicker = document.getElementById("inlineColorPicker");
+
+function applyThemeColor(targetColor) {
+    themePicker.value = targetColor;
+    
+    // Updates basic display colors
+    document.getElementById('clock').style.color = targetColor;
+    document.getElementById('date').style.color = targetColor;
+    document.querySelector('.search-box button').style.color = targetColor;
+    launcherMenu.style.borderColor = targetColor;
+    
+    // Updates dynamic element structures
+    const elementsToPaint = document.querySelectorAll(".link-card, .bento-dot, #scratchPad");
+    elementsToPaint.forEach(el => {
+        el.style.color = targetColor;
+        el.style.borderColor = targetColor;
+    });
+
+    // Update avatar borders dynamically to match theme picker
+    document.getElementById('gAvatar').style.borderColor = targetColor;
+    document.getElementById('mAvatar').style.borderColor = targetColor;
+}
+
+function generateRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+function applyRandomFont() {
+const classicWindowsFonts = [
+		"Aharoni", "Aldhabi", "AMC Fluent Icons", "Andalus", "Angsana New", "AngsanaUPC", "Anthropic Sans Display", "Anthropic Sans Extrabold Displa", "Anthropic Sans Extrabold Text", "Anthropic Sans Light Display", "Anthropic Sans Light Text", "Anthropic Sans Medium Display", "Anthropic Sans Medium Text", "Anthropic Sans Semibold Display", "Anthropic Sans Semibold Text", "Anthropic Sans Text", "Anthropic Serif Display", "Anthropic Serif Extrabold Displ", "Anthropic Serif Extrabold Text", "Anthropic Serif Light Display", "Anthropic Serif Light Text", "Anthropic Serif Medium Display", "Anthropic Serif Medium Text", "Anthropic Serif Semibold Displa", "Anthropic Serif Semibold Text", "Anthropic Serif Text", "Aparajita", "Aptos", "Aptos Black", "Aptos Display", "Aptos ExtraBold", "Aptos Light", "Aptos Mono", "Aptos Narrow", "Aptos SemiBold", "Aptos Serif", "Arabic Typesetting", "Arial", "Arial Black", "Arial Nova", "Arial Nova Cond", "Arial Nova Cond Light", "Arial Nova Light", "Bahnschrift", "Bahnschrift Condensed", "Bahnschrift Light", "Bahnschrift Light Condensed", "Bahnschrift Light SemiCondensed", "Bahnschrift SemiBold", "Bahnschrift SemiBold Condensed", "Bahnschrift SemiBold SemiConden", "Bahnschrift SemiCondensed", "Bahnschrift SemiLight", "Bahnschrift SemiLight Condensed", "Bahnschrift SemiLight SemiConde", "Batang", "BatangChe", "BIZ UDGothic", "BIZ UDMincho Medium", "BIZ UDPGothic", "BIZ UDPMincho Medium", "Book Antiqua", "Bookshelf Symbol 7", "Bradley Hand ITC", "Browallia New", "BrowalliaUPC", "Calculator Fluent Icons", "Calibri", "Calibri Light", "Cambria", "Cambria Math", "Camera Fluent Icons", "Candara", "Candara Light", "Cascadia Code", "Cascadia Code ExtraLight", "Cascadia Code Light", "Cascadia Code SemiBold", "Cascadia Code SemiLight", "Cascadia Mono", "Cascadia Mono ExtraLight", "Cascadia Mono Light", "Cascadia Mono SemiBold", "Cascadia Mono SemiLight", "Century", "Century Gothic", "Clock Fluent Icons", "Clock-Fluent-Symbols", "codicon", "Comic Sans MS", "Consolas", "Constantia", "Corbel", "Corbel Light", "Cordia New", "CordiaUPC", "Courier New", "Crimson Text", "Crimson Text SemiBold", "DaunPenh", "David", "DengXian", "DengXian Light", "DevHome Fluent Icons", "DFKai-SB", "DilleniaUPC", "DokChampa", "Dotum", "DotumChe", "Dubai", "Dubai Light", "Dubai Medium", "Ebrima", "Estrangelo Edessa", "EucrosiaUPC", "Euphemia", "FangSong", "Franklin Gothic Medium", "FrankRuehl", "FreesiaUPC", "Freestyle Script", "French Script MT", "Gabriola", "Gadugi", "Gautami", "Georgia", "Georgia Pro", "Georgia Pro Black", "Georgia Pro Cond", "Georgia Pro Cond Black", "Georgia Pro Cond Light", "Georgia Pro Cond Semibold", "Georgia Pro Light", "Georgia Pro Semibold", "Gill Sans Nova", "Gill Sans Nova Cond", "Gill Sans Nova Cond Lt", "Gill Sans Nova Cond Ultra Bold", "Gill Sans Nova Cond XBd", "Gill Sans Nova Light", "Gill Sans Nova Ultra Bold", "Gisha", "Gulim", "GulimChe", "Gungsuh", "GungsuhChe", "Impact", "Ink Free", "IrisUPC", "Iskoola Pota", "JasmineUPC", "Javanese Text", "Juice ITC", "KaiTi", "Kalinga", "Kartika", "KaTeX_AMS", "KaTeX_Caligraphic", "KaTeX_Fraktur", "KaTeX_Main", "KaTeX_Math", "KaTeX_SansSerif", "KaTeX_Script", "KaTeX_Size1", "KaTeX_Size2", "KaTeX_Size3", "KaTeX_Size4", "KaTeX_Typewriter", "Khmer UI", "KodchiangUPC", "Kokila", "Kristen ITC", "Lao UI", "Latha", "Leelawadee", "Leelawadee UI", "Leelawadee UI Semilight", "Levenim MT", "LilyUPC", "Lucida Console", "Lucida Handwriting", "Lucida Sans Unicode", "Malgun Gothic", "Malgun Gothic Semilight", "Mangal", "Marlett", "Meiryo", "Meiryo UI", "Microsoft Himalaya", "Microsoft JhengHei", "Microsoft JhengHei Light", "Microsoft JhengHei UI", "Microsoft JhengHei UI Light", "Microsoft New Tai Lue", "Microsoft PhagsPa", "Microsoft Sans Serif", "Microsoft Tai Le", "Microsoft Uighur", "Microsoft YaHei", "Microsoft YaHei Light", "Microsoft YaHei UI", "Microsoft YaHei UI Light", "Microsoft Yi Baiti", "MingLiU", "MingLiU-ExtB", "MingLiU_HKSCS", "MingLiU_HKSCS-ExtB", "MingLiU_MSCS", "MingLiU_MSCS-ExtB", "Miriam", "Miriam Fixed", "Mistral", "MMX Fluent Icons", "Mongolian Baiti", "MoolBoran", "MS Gothic", "MS Mincho", "MS PGothic", "MS PMincho", "MS Reference Sans Serif", "MS Reference Specialty", "MS UI Gothic", "MT Extra", "MV Boli", "Myanmar Text", "Narkisim", "Neue Haas Grotesk Text Pro", "Neue Haas Grotesk Text Pro Blac", "Neue Haas Grotesk Text Pro Extr", "Neue Haas Grotesk Text Pro Ligh", "Neue Haas Grotesk Text Pro Medi", "Neue Haas Grotesk Text Pro Thin", "Neue Haas Grotesk Text Pro Ultr", "Nirmala Text", "Nirmala Text Semilight", "Nirmala UI", "Nirmala UI Semilight", "Notepad Fluent Icons", "Noto Sans HK", "Noto Sans HK Black", "Noto Sans HK DemiLight", "Noto Sans HK Light", "Noto Sans HK Medium", "Noto Sans HK Thin", "Noto Sans JP", "Noto Sans JP Black", "Noto Sans JP DemiLight", "Noto Sans JP Light", "Noto Sans JP Medium", "Noto Sans JP Thin", "Noto Sans KR", "Noto Sans KR Black", "Noto Sans KR DemiLight", "Noto Sans KR Light", "Noto Sans KR Medium", "Noto Sans KR Thin", "Noto Sans SC", "Noto Sans SC Black", "Noto Sans SC DemiLight", "Noto Sans SC Light", "Noto Sans SC Medium", "Noto Sans SC Thin", "Noto Sans TC", "Noto Sans TC Black", "Noto Sans TC DemiLight", "Noto Sans TC Light", "Noto Sans TC Medium", "Noto Sans TC Thin", "Noto Serif HK", "Noto Serif HK Black", "Noto Serif HK ExtraLight", "Noto Serif HK Light", "Noto Serif HK Medium", "Noto Serif HK SemiBold", "Noto Serif JP", "Noto Serif JP Black", "Noto Serif JP ExtraLight", "Noto Serif JP Light", "Noto Serif JP Medium", "Noto Serif JP SemiBold", "Noto Serif KR", "Noto Serif KR Black", "Noto Serif KR ExtraLight", "Noto Serif KR Light", "Noto Serif KR Medium", "Noto Serif KR SemiBold", "Noto Serif SC", "Noto Serif SC Black", "Noto Serif SC ExtraLight", "Noto Serif SC Light", "Noto Serif SC Medium", "Noto Serif SC SemiBold", "Noto Serif TC", "Noto Serif TC Black", "Noto Serif TC ExtraLight", "Noto Serif TC Light", "Noto Serif TC Medium", "Noto Serif TC SemiBold", "NSimSun", "Nyala", "Palatino Linotype", "Papyrus", "Photos Fluent Icons", "Plantagenet Cherokee", "PMingLiU", "PMingLiU-ExtB", "Pristina", "Raavi", "Roboto Condensed", "Rockwell Nova", "Rockwell Nova Cond", "Rockwell Nova Cond Light", "Rockwell Nova Extra Bold", "Rockwell Nova Light", "Rod", "Sakkal Majalla", "Sans Serif Collection", "Sanskrit Text", "Segoe Fluent Icons", "Segoe MDL2 Assets", "Segoe Print", "Segoe Script", "Segoe UI", "Segoe UI Black", "Segoe UI Emoji", "Segoe UI Historic", "Segoe UI Light", "Segoe UI Semibold", "Segoe UI Semilight", "Segoe UI Symbol", "Segoe UI Variable Display", "Segoe UI Variable Display Light", "Segoe UI Variable Display Semib", "Segoe UI Variable Display Semil", "Segoe UI Variable Small", "Segoe UI Variable Small Light", "Segoe UI Variable Small Semibol", "Segoe UI Variable Small Semilig", "Segoe UI Variable Text", "Segoe UI Variable Text Light", "Segoe UI Variable Text Semibold", "Segoe UI Variable Text Semiligh", "Shonar Bangla", "Shruti", "SimHei", "Simplified Arabic", "Simplified Arabic Fixed", "SimSun", "SimSun-ExtB", "SimSun-ExtG", "Sitka Banner", "Sitka Banner Semibold", "Sitka Display", "Sitka Display Semibold", "Sitka Heading", "Sitka Heading Semibold", "Sitka Small", "Sitka Small Semibold", "Sitka Subheading", "Sitka Subheading Semibold", "Sitka Text", "Sitka Text Semibold", "Snip and Sketch Fluent Icons", "Source Serif Pro", "Source Serif Pro SemiBold", "Store Fluent Icons", "Store MDL2 Assets", "Store MDL2 Color", "SWGamekeys MT", "Sylfaen", "Symbol", "Tahoma", "Tempus Sans ITC", "Times New Roman", "Traditional Arabic", "Trebuchet MS", "Tunga", "UD Digi Kyokasho N", "UD Digi Kyokasho NK", "UD Digi Kyokasho NP", "Urdu Typesetting", "Utsaah", "Vani", "Verdana", "Verdana Pro", "Verdana Pro Black", "Verdana Pro Cond", "Verdana Pro Cond Black", "Verdana Pro Cond Light", "Verdana Pro Cond Semibold", "Verdana Pro Light", "Verdana Pro Semibold", "Vijaya", "Vrinda", "Webdings", "Wingdings", "Wingdings 2", "Wingdings 3", "WinSec Fluent Icons", "Yu Gothic", "Yu Gothic Light", "Yu Gothic Medium", "Yu Gothic UI", "Yu Gothic UI Light", "Yu Gothic UI Semibold", "Yu Gothic UI Semilight", "Yu Mincho", "Yu Mincho Demibold", "Yu Mincho Light"
+    ];
+    
+    const randomPickedFont = classicWindowsFonts[Math.floor(Math.random() * classicWindowsFonts.length)];
+    
+    document.body.style.fontFamily = randomPickedFont;
+    
+    document.querySelectorAll("input, button, textarea, .clock, .date, .link-card span").forEach(el => {
+        el.style.fontFamily = randomPickedFont;
+    });
+}
+
+// ALWAYS launch the randomized generator on refresh
+applyThemeColor(generateRandomColor());
+
+applyRandomFont();
+
+// Changing the picker updates the page live, but WILL NOT lock it for the next refresh
+themePicker.addEventListener("input", function() {
+    applyThemeColor(themePicker.value);
+});
+
+// ==========================================
+// PERSISTENT LOCALSTORAGE SCRATCHPAD LOGIC
+// ==========================================
+const scratchPad = document.getElementById("scratchPad");
+
+scratchPad.value = localStorage.getItem("michael_notepad_text") || "";
+
+scratchPad.addEventListener("input", function() {
+    localStorage.setItem("michael_notepad_text", scratchPad.value);
+});
+
+</script>
+
+</body>
+</html>
